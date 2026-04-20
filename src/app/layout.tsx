@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { TRPCReactProvider } from "@/lib/trpc/client";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Referral Intake",
-  description: "Patient referral intake application",
+  title: "Patient Referral Intake | Pain Management & Neurology",
+  description: "Submit a patient referral to our pain management and neurology clinic.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="font-sans antialiased">{children}</body>
+    <html lang="en">
+      <body className={`${inter.className} bg-slate-50 text-slate-900 antialiased`}>
+        <TRPCReactProvider>
+          {children}
+        </TRPCReactProvider>
+      </body>
     </html>
   );
 }

@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# referral-intake
 
-## Getting Started
+A referral intake form for a pain management clinic. Law firm staff submit patient referrals, and clinic admins review them through a simple dashboard.
 
-First, run the development server:
+Built with Next.js 14 App Router, tRPC, Drizzle ORM, and PostgreSQL. Bun for package management.
+
+---
+
+## Getting started
+
+You'll need Node.js 20+, [Bun](https://bun.sh), and Docker.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+git clone https://github.com/gor3a/referral-intake
+cd referral-intake
+cp .env.example .env
+docker compose up -d
+bun install
+bun db:migrate
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) for the referral form and [http://localhost:3000/admin](http://localhost:3000/admin) for the admin dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## What it does
 
-## Learn More
+**Referral form (`/`)** — attorneys fill in patient details, contact info, and appointment preferences. Validated on both client and server using the same Zod schema. On submit, the referral is stored and a confirmation card is shown with a reference ID.
 
-To learn more about Next.js, take a look at the following resources:
+**Admin dashboard (`/admin`)** — lists all submitted referrals, searchable by patient name or law firm. Click any row to open the detail view.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Referral detail (`/admin/[id]`)** — full breakdown of a referral with an inline status selector (New → Contacted → Scheduled → Cancelled). Status saves on change.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| | |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| API | tRPC v11 |
+| Database | PostgreSQL 16 via Docker |
+| ORM | Drizzle |
+| Validation | Zod — shared between client and server |
+| Forms | React Hook Form + zodResolver |
+| UI | Tailwind CSS + shadcn/ui |
+| Animations | Framer Motion |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Project layout
+
+```
+src/
+  app/                  Pages and API routes (Next.js App Router)
+  components/           Form, success card, admin search, status update
+  server/
+    db/                 Drizzle client + schema
+    routers/            tRPC procedures
+  lib/
+    trpc/               Server context and React client setup
+    validations/        Shared Zod schema
+```
+
+---
+
+## Database scripts
+
+```bash
+bun db:generate   # generate migrations after schema changes
+bun db:migrate    # apply pending migrations
+bun db:studio     # open Drizzle Studio
+```
+
+---
+
+## A few notes
+
+The Zod schema in `src/lib/validations/referral.ts` is the single source of truth for validation — the tRPC router and the form both import from it, nothing is duplicated.
+
+Date of birth is stored as a plain `YYYY-MM-DD` string for simplicity. In a production setup this would be a proper `date` column with timezone handling.
+
+The admin pages are unauthenticated — intentional for this scope.
